@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="http://schemas.android.com/tools">
+    <color name="seed">#0B5CAD</color>
+    <color name="surface">#FAFBFC</color>
+    <string name="app_name">IM2073 Clicker</string>
+    <string name="choice_a">A</string>
+    <string name="choice_b">B</string>
+    <string name="choice_c">C</string>
+    <string name="choice_d">D</string>
+    <string name="connection_hint">Emulator should use 10.0.2.2. Replace the URL below with your laptop IP when testing on a real phone.</string>
+    <string name="question_text">Q1. Who is the coolest Marvel Hero?</string>
+    <string name="response_idle">Tap a choice to submit your vote.</string>
+    <string name="sending_vote">Submitting vote...</string>
+    <string name="server_base_url">http://10.0.2.2:8080/clicker/select</string>
+    <style name="Theme.Clicker" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:statusBarColor" ns1:targetApi="l">#0B5CAD</item>
+        <item name="android:navigationBarColor">#FAFBFC</item>
+    </style>
+</resources>
