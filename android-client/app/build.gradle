@@ -2,7 +2,10 @@ plugins {
     id 'com.android.application'
 }
 
-def serverBaseUrl = project.findProperty("SERVER_BASE_URL") ?: "http://10.0.2.2:8080/clicker/select"
+def voteApiUrl = project.findProperty("SERVER_BASE_URL") ?: "http://10.0.2.2:8080/clicker/select"
+def commentApiUrl = voteApiUrl.endsWith("/select")
+        ? voteApiUrl.substring(0, voteApiUrl.length() - "/select".length()) + "/comment"
+        : voteApiUrl + "/comment"
 
 android {
     namespace 'com.example.clicker'
@@ -14,7 +17,8 @@ android {
         targetSdk 36
         versionCode 1
         versionName "1.0"
-        buildConfigField "String", "SERVER_BASE_URL", "\"${serverBaseUrl}\""
+        buildConfigField "String", "SERVER_BASE_URL", "\"${voteApiUrl}\""
+        buildConfigField "String", "SERVER_COMMENT_URL", "\"${commentApiUrl}\""
     }
 
     buildTypes {

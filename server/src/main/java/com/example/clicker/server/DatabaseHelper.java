@@ -2,6 +2,10 @@ package com.example.clicker.server;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -49,6 +53,42 @@ public final class DatabaseHelper {
         }
 
         return counts;
+    }
+
+    public static void insertComment(int questionNo, String commentText) throws SQLException {
+        String sql = "INSERT INTO comments (questionNo, commentText) VALUES (?, ?)";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, questionNo);
+            statement.setString(2, commentText);
+            statement.executeUpdate();
+        }
+    }
+
+    public static List<CommentEntry> listRecentComments(int questionNo, int limit) throws SQLException {
+        List<CommentEntry> comments = new ArrayList<>();
+        String sql = "SELECT commentText, createdAt FROM comments WHERE questionNo = ? ORDER BY createdAt DESC, id DESC LIMIT ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, questionNo);
+            statement.setInt(2, limit);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Timestamp createdAt = resultSet.getTimestamp("createdAt");
+                    LocalDateTime createdDateTime = createdAt == null
+                            ? LocalDateTime.now()
+                            : createdAt.toLocalDateTime();
+                    comments.add(new CommentEntry(
+                            resultSet.getString("commentText"),
+                            createdDateTime));
+                }
+            }
+        }
+
+        return comments;
     }
 
     private static Connection getConnection() throws SQLException {

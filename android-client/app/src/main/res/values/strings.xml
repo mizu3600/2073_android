@@ -5,5 +5,11 @@
     <string name="choice_b">B</string>
     <string name="choice_c">C</string>
     <string name="choice_d">D</string>
+    <string name="comment_label">Anonymous comment</string>
+    <string name="comment_hint">Share a short comment for the lecturer view.</string>
+    <string name="submit_comment">Send comment</string>
+    <string name="comment_empty">Comment cannot be empty.</string>
+    <string name="comment_too_long">Comment is too long. Maximum %1$d characters.</string>
     <string name="sending_vote">Submitting vote...</string>
+    <string name="sending_comment">Submitting comment...</string>
 </resources>

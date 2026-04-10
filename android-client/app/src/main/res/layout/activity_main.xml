@@ -89,5 +89,47 @@
             android:textStyle="bold"
             app:backgroundTint="@null" />
 
+        <TextView
+            android:id="@+id/txtCommentLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/comment_label"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_comment_input"
+            android:gravity="top|start"
+            android:hint="@string/comment_hint"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLength="240"
+            android:minHeight="120dp"
+            android:padding="16dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
+            android:textSize="15sp" />
+
+        <Button
+            android:id="@+id/btnCommentSubmit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_comment_button"
+            android:backgroundTint="@null"
+            android:minHeight="52dp"
+            android:onClick="btnCommentHandler"
+            android:text="@string/submit_comment"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@null" />
+
     </LinearLayout>
 </ScrollView>

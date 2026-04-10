@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -35,16 +36,27 @@ public class DisplayServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         int questionNo = parseQuestionNo(request.getParameter("questionNo"));
         Map<String, Integer> counts = defaultCounts();
-        String errorMessage = null;
+        List<CommentEntry> comments = List.of();
+        List<String> errors = new ArrayList<>();
 
         try {
             counts.putAll(DatabaseHelper.countResponsesByChoice(questionNo));
         } catch (SQLException e) {
-            errorMessage = e.getMessage();
+            errors.add("Vote counts unavailable: " + e.getMessage());
+        }
+
+        try {
+            comments = DatabaseHelper.listRecentComments(questionNo, 10);
+        } catch (SQLException e) {
+            errors.add("Comments unavailable: " + e.getMessage());
         }
 
         try (PrintWriter out = response.getWriter()) {
-            out.print(renderPage(questionNo, counts, errorMessage));
+            out.print(renderPage(
+                    questionNo,
+                    counts,
+                    comments,
+                    errors.isEmpty() ? null : String.join(" ", errors)));
         }
     }
 
@@ -68,7 +80,7 @@ public class DisplayServlet extends HttpServlet {
         return counts;
     }
 
-    private String renderPage(int questionNo, Map<String, Integer> counts, String errorMessage) {
+    private String renderPage(int questionNo, Map<String, Integer> counts, List<CommentEntry> comments, String errorMessage) {
         StringBuilder html = new StringBuilder();
         int totalVotes = counts.values().stream().mapToInt(Integer::intValue).sum();
         String leadingChoice = counts.entrySet().stream()
@@ -145,6 +157,11 @@ public class DisplayServlet extends HttpServlet {
         html.append(".choice-dot{width:10px;height:10px;border-radius:50%;display:inline-block;}\n");
         html.append(".footer-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;font-size:14px;color:var(--muted);padding-top:16px;border-top:1px solid var(--line);}\n");
         html.append(".footer-meta a{color:var(--accent);text-decoration:none;font-weight:700;}\n");
+        html.append(".comment-list{display:grid;gap:12px;}\n");
+        html.append(".comment-item{border:1px solid var(--line);border-radius:14px;padding:16px;background:#ffffff;}\n");
+        html.append(".comment-time{display:block;margin-bottom:8px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}\n");
+        html.append(".comment-text{margin:0;font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}\n");
+        html.append(".empty-state{border:1px dashed var(--line);border-radius:14px;padding:18px;color:var(--muted);background:#ffffff;}\n");
         html.append(".error{margin-top:16px;padding:14px 16px;background:#faf4f4;color:#8a2d2d;border:1px solid #e5caca;border-radius:12px;}\n");
         html.append("@media (max-width:860px){.summary-grid,.pie-layout{grid-template-columns:1fr;}.panel{padding:18px;}.hero{padding:20px;}.column-chart{min-height:300px;gap:12px;}.column-track{height:220px;}}\n");
         html.append("@media (max-width:560px){.shell{padding:22px 14px 36px;}.bar-item{grid-template-columns:48px minmax(0,1fr);}.bar-count{grid-column:1 / -1;text-align:left;}.toggle-btn{flex:1 1 100%;}}\n");
@@ -218,6 +235,14 @@ public class DisplayServlet extends HttpServlet {
         }
 
         html.append("</section>\n");
+
+        html.append("<section class=\"panel\">\n");
+        html.append("<div class=\"panel-head\">\n");
+        html.append("<div><h2>Recent Comments</h2><p class=\"meta\">Latest anonymous comments from students.</p></div>\n");
+        html.append("</div>\n");
+        appendComments(html, comments);
+        html.append("</section>\n");
+
         html.append("</div>\n");
         html.append("<script>\n");
         html.append("const toggleButtons=document.querySelectorAll('[data-chart]');\n");
@@ -307,6 +332,26 @@ public class DisplayServlet extends HttpServlet {
             html.append(String.format(Locale.ENGLISH, "<td>%d%%</td>%n", percent));
             html.append("</tr>\n");
         }
+    }
+
+    private void appendComments(StringBuilder html, List<CommentEntry> comments) {
+        if (comments.isEmpty()) {
+            html.append("<div class=\"empty-state\">No comments yet. Students can submit anonymous notes from the Android app.</div>\n");
+            return;
+        }
+
+        html.append("<div class=\"comment-list\">\n");
+        for (CommentEntry comment : comments) {
+            html.append("<article class=\"comment-item\">\n");
+            html.append(String.format(Locale.ENGLISH,
+                    "<span class=\"comment-time\">%s</span>%n",
+                    FORMATTER.format(comment.getCreatedAt())));
+            html.append(String.format(Locale.ENGLISH,
+                    "<p class=\"comment-text\">%s</p>%n",
+                    escapeHtml(comment.getCommentText())));
+            html.append("</article>\n");
+        }
+        html.append("</div>\n");
     }
 
     private int percentage(int value, int totalVotes) {
