@@ -162,22 +162,16 @@ public class DisplayServlet extends HttpServlet {
         html.append(".column-label{display:block;margin-top:12px;font-size:14px;font-weight:700;letter-spacing:0.08em;color:var(--muted);}\n");
         html.append(".column-percent{display:block;margin-top:6px;font-size:13px;color:var(--muted);}\n");
         html.append(".bar-list{display:grid;gap:16px;}\n");
-        html.append(".bar-item{display:grid;grid-template-columns:60px minmax(0,1fr) 72px;gap:14px;align-items:center;}\n");
+        html.append(".bar-item{display:grid;grid-template-columns:60px minmax(0,1fr);gap:14px;align-items:center;}\n");
         html.append(".bar-item strong{font-size:16px;letter-spacing:0.08em;}\n");
         html.append(".bar-track{height:20px;border-radius:999px;background:#f0f0ee;padding:3px;}\n");
         html.append(".bar-fill{height:100%;border-radius:999px;min-width:14px;}\n");
-        html.append(".bar-count{text-align:right;font-size:14px;color:var(--muted);font-weight:700;}\n");
-        html.append(".pie-layout{display:grid;grid-template-columns:minmax(280px,360px) minmax(0,1fr);gap:24px;align-items:center;}\n");
+        html.append(".pie-layout{display:flex;justify-content:center;}\n");
         html.append(".pie-chart{width:min(100%,320px);aspect-ratio:1;border-radius:50%;margin:0 auto;position:relative;border:1px solid var(--line);}\n");
         html.append(".pie-chart::after{content:'';position:absolute;inset:24%;background:#fff;border-radius:50%;border:1px solid var(--line);}\n");
         html.append(".pie-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;}\n");
         html.append(".pie-total{font-size:34px;font-weight:700;line-height:1;}\n");
         html.append(".pie-caption{margin-top:8px;font-size:13px;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;}\n");
-        html.append(".legend{display:grid;gap:12px;}\n");
-        html.append(".legend-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:#ffffff;border:1px solid var(--line);gap:12px;}\n");
-        html.append(".legend-left{display:flex;align-items:center;gap:10px;font-weight:700;}\n");
-        html.append(".swatch{width:14px;height:14px;border-radius:50%;display:inline-block;}\n");
-        html.append(".legend-meta{font-size:14px;color:var(--muted);}\n");
         html.append("table{width:100%;border-collapse:collapse;}\n");
         html.append("th,td{padding:12px 0;border-bottom:1px solid var(--line);text-align:left;}\n");
         html.append("th{font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}\n");
@@ -201,7 +195,7 @@ public class DisplayServlet extends HttpServlet {
         html.append(".notice{padding:14px 16px;background:#f4f7f1;color:#335c2b;border:1px solid #cfe0c6;border-radius:12px;}\n");
         html.append(".error{margin-top:16px;padding:14px 16px;background:#faf4f4;color:#8a2d2d;border:1px solid #e5caca;border-radius:12px;}\n");
         html.append("@media (max-width:860px){.summary-grid,.pie-layout{grid-template-columns:1fr;}.panel{padding:18px;}.hero{padding:20px;}.column-chart{min-height:300px;gap:12px;}.column-track{height:220px;}}\n");
-        html.append("@media (max-width:560px){.shell{padding:22px 14px 36px;}.bar-item{grid-template-columns:48px minmax(0,1fr);}.bar-count{grid-column:1 / -1;text-align:left;}.toggle-btn,.control-btn,.control-select{flex:1 1 100%;}.control-form{width:100%;}.metric{width:100%;}}\n");
+        html.append("@media (max-width:560px){.shell{padding:22px 14px 36px;}.bar-item{grid-template-columns:48px minmax(0,1fr);}.toggle-btn,.control-btn,.control-select{flex:1 1 100%;}.control-form{width:100%;}.metric{width:100%;}}\n");
         html.append("</style>\n");
         html.append("</head>\n");
         html.append("<body>\n");
@@ -317,7 +311,6 @@ public class DisplayServlet extends HttpServlet {
                     Math.max(percent, entry.getValue() > 0 ? 8 : 0),
                     colorForChoice(choice)));
             html.append("</div>\n");
-            html.append(String.format(Locale.ENGLISH, "<div class=\"bar-count\">%d votes · %d%%</div>%n", entry.getValue(), percent));
             html.append("</div>\n");
         }
     }
@@ -327,7 +320,6 @@ public class DisplayServlet extends HttpServlet {
             int percent = percentage(entry.getValue(), totalVotes);
             String choice = entry.getKey();
             html.append("<div class=\"column-item\">\n");
-            html.append(String.format(Locale.ENGLISH, "<span class=\"column-value\">%d</span>%n", entry.getValue()));
             html.append("<div class=\"column-track\">");
             html.append(String.format(Locale.ENGLISH,
                     "<div class=\"column-bar\" style=\"height:%d%%;background:%s;\"></div>",
@@ -335,7 +327,6 @@ public class DisplayServlet extends HttpServlet {
                     colorForChoice(choice)));
             html.append("</div>\n");
             html.append(String.format(Locale.ENGLISH, "<span class=\"column-label\">%s</span>%n", choice.toUpperCase(Locale.ENGLISH)));
-            html.append(String.format(Locale.ENGLISH, "<span class=\"column-percent\">%d%% share</span>%n", percent));
             html.append("</div>\n");
         }
     }
@@ -349,21 +340,6 @@ public class DisplayServlet extends HttpServlet {
         html.append(String.format(Locale.ENGLISH, "<span class=\"pie-total\">%d</span>", totalVotes));
         html.append("<span class=\"pie-caption\">Total Votes</span>");
         html.append("</div>\n");
-        html.append("</div>\n");
-        html.append("<div class=\"legend\">\n");
-        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
-            int percent = percentage(entry.getValue(), totalVotes);
-            String choice = entry.getKey();
-            html.append("<div class=\"legend-item\">\n");
-            html.append("<div class=\"legend-left\">");
-            html.append(String.format(Locale.ENGLISH,
-                    "<span class=\"swatch\" style=\"background:%s;\"></span><span>Choice %s</span>",
-                    colorForChoice(choice),
-                    choice.toUpperCase(Locale.ENGLISH)));
-            html.append("</div>\n");
-            html.append(String.format(Locale.ENGLISH, "<div class=\"legend-meta\">%d votes · %d%%</div>%n", entry.getValue(), percent));
-            html.append("</div>\n");
-        }
         html.append("</div>\n");
         html.append("</div>\n");
     }
