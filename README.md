@@ -14,6 +14,16 @@
 - `database/`：数据库初始化与查询脚本
 - `scripts/`：构建、部署、环境脚本
 
+## 当前结构
+
+- `android-client/app/src/main/java/com/example/clicker/ui/`：Activity 与界面交互
+- `android-client/app/src/main/java/com/example/clicker/network/`：客户端 HTTP 请求
+- `android-client/app/src/main/java/com/example/clicker/config/`：客户端运行配置
+- `server/src/main/java/com/example/clicker/server/web/`：Servlet 与页面渲染
+- `server/src/main/java/com/example/clicker/server/service/`：投票业务逻辑
+- `server/src/main/java/com/example/clicker/server/repository/`：JDBC 数据访问
+- `server/src/main/java/com/example/clicker/server/config/`：数据库连接与应用清理逻辑
+
 ## 本机环境
 
 - Android SDK：`~/Library/Android/sdk`
@@ -39,7 +49,7 @@ bash scripts/build_android.sh
 ## Android 地址说明
 
 - 模拟器默认使用：`http://10.0.2.2:8080/clicker/select`
-- 真机调试时，请把 [`strings.xml`](/Users/jesse/Desktop/2073_android/android-client/app/src/main/res/values/strings.xml) 里的 `server_base_url` 改成你电脑的局域网 IP
+- 真机调试时，请在 [`gradle.properties`](/Users/jesse/Desktop/2073_android/android-client/gradle.properties) 中设置 `SERVER_BASE_URL=http://你的电脑局域网IP:8080/clicker/select`
 
 ## 说明
 

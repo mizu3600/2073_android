@@ -1,4 +1,4 @@
-package com.example.clicker.server;
+package com.example.clicker.server.config;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,10 +7,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public final class DatabaseHelper {
+public final class DatabaseConnectionFactory {
     private static final Properties PROPERTIES = loadProperties();
 
-    private DatabaseHelper() {
+    private DatabaseConnectionFactory() {
     }
 
     public static Connection getConnection() throws SQLException {
@@ -19,7 +19,7 @@ public final class DatabaseHelper {
 
     private static Properties loadProperties() {
         Properties properties = new Properties();
-        try (InputStream inputStream = DatabaseHelper.class.getClassLoader().getResourceAsStream("db.properties")) {
+        try (InputStream inputStream = DatabaseConnectionFactory.class.getClassLoader().getResourceAsStream("db.properties")) {
             if (inputStream != null) {
                 properties.load(inputStream);
             }

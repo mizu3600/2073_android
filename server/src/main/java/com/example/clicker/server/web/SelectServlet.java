@@ -1,5 +1,6 @@
-package com.example.clicker.server;
+package com.example.clicker.server.web;
 
+import com.example.clicker.server.service.VoteService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -8,8 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Locale;
 import java.util.Set;
@@ -17,6 +16,7 @@ import java.util.Set;
 @WebServlet("/select")
 public class SelectServlet extends HttpServlet {
     private static final Set<String> VALID_CHOICES = Set.of("a", "b", "c", "d");
+    private final VoteService voteService = new VoteService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,12 +33,8 @@ public class SelectServlet extends HttpServlet {
                 return;
             }
 
-            String sql = "INSERT INTO responses (questionNo, choice) VALUES (?, ?)";
-            try (Connection connection = DatabaseHelper.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setInt(1, questionNo);
-                statement.setString(2, choice);
-                statement.executeUpdate();
+            try {
+                voteService.submitVote(questionNo, choice);
                 out.printf("Vote submitted for question %d, choice %s.%n",
                         questionNo,
                         choice.toUpperCase(Locale.ENGLISH));

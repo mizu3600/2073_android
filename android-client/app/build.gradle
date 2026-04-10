@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
 }
 
+def serverBaseUrl = project.findProperty("SERVER_BASE_URL") ?: "http://10.0.2.2:8080/clicker/select"
+
 android {
     namespace 'com.example.clicker'
     compileSdk 36
@@ -12,6 +14,7 @@ android {
         targetSdk 36
         versionCode 1
         versionName "1.0"
+        buildConfigField "String", "SERVER_BASE_URL", "\"${serverBaseUrl}\""
     }
 
     buildTypes {
@@ -24,6 +27,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 }
 

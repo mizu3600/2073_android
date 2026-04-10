@@ -7,6 +7,5 @@
     <string name="choice_d">D</string>
     <string name="response_idle">Tap a choice to submit your vote.</string>
     <string name="sending_vote">Submitting vote...</string>
-    <string name="connection_hint">Emulator should use 10.0.2.2. Replace the URL below with your laptop IP when testing on a real phone.</string>
-    <string name="server_base_url">http://10.0.2.2:8080/clicker/select</string>
+    <string name="connection_hint">Default debug endpoint comes from Gradle. Set SERVER_BASE_URL in gradle.properties when testing on a real phone.</string>
 </resources>
