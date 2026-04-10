@@ -42,11 +42,21 @@ bash scripts/build_android.sh
 
 - Lecturer 页面：`http://localhost:8080/clicker/display`
 - Servlet 测试：`http://localhost:8080/clicker/select?choice=a`
+- 状态接口：`http://localhost:8080/clicker/status?questionNo=1`
+- Lecturer 控制：页面内 `Start Poll` / `End Now` 按钮
 
 ## Android 地址说明
 
 - 模拟器默认使用：`http://10.0.2.2:8080/clicker/select`
 - 真机调试时，请在 [`gradle.properties`](/Users/jesse/Desktop/2073_android/android-client/gradle.properties) 中设置 `SERVER_BASE_URL=http://你的电脑局域网IP:8080/clicker/select`
+
+## 时间窗口
+
+- 每道题的开放时间保存在 MySQL `questions` 表
+- 默认初始化为：`2026-01-01 00:00:00` 到 `2026-12-31 23:59:59`
+- 超过结束时间或尚未到开始时间时，后端会拒绝投票和评论
+- Lecturer 页面可以直接点击 `Start Poll` 并选择时长，或点击 `End Now` 立即结束
+- Android 会通过 `/status` 读取当前状态，并在关闭时禁用投票与评论
 
 ## 说明
 

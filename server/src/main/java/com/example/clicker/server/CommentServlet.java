@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.util.Locale;
 
 @WebServlet("/comment")
 public class CommentServlet extends HttpServlet {
@@ -23,6 +25,7 @@ public class CommentServlet extends HttpServlet {
 
         int questionNo = parseQuestionNo(request.getParameter("questionNo"));
         String comment = normaliseComment(request.getParameter("comment"));
+        QuestionSchedule schedule = DatabaseHelper.findQuestionSchedule(questionNo);
 
         try (PrintWriter out = response.getWriter()) {
             if (comment == null) {
@@ -34,6 +37,18 @@ public class CommentServlet extends HttpServlet {
             if (comment.length() > MAX_COMMENT_LENGTH) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.printf("Comment is too long. Maximum %d characters.%n", MAX_COMMENT_LENGTH);
+                return;
+            }
+
+            if (schedule == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                out.printf("Question %d not found.%n", questionNo);
+                return;
+            }
+
+            if (!schedule.isOpen(LocalDateTime.now())) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.println(buildClosedMessage(schedule));
                 return;
             }
 
@@ -74,5 +89,18 @@ public class CommentServlet extends HttpServlet {
 
         String normalised = comment.trim();
         return normalised.isEmpty() ? null : normalised;
+    }
+
+    private String buildClosedMessage(QuestionSchedule schedule) {
+        PollStatus status = schedule.getStatus(LocalDateTime.now());
+        return switch (status) {
+            case NOT_STARTED -> String.format(Locale.ENGLISH,
+                    "Comments are not open yet. They open at %s.",
+                    DisplayServlet.FORMATTER.format(schedule.getStartTime()));
+            case CLOSED -> String.format(Locale.ENGLISH,
+                    "Comments are closed. They ended at %s.",
+                    DisplayServlet.FORMATTER.format(schedule.getEndTime()));
+            case OPEN -> "Comments are open.";
+        };
     }
 }

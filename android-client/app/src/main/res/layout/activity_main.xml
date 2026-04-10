@@ -18,12 +18,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="12dp"
             android:gravity="center"
             android:text="@string/question_text"
             android:textColor="@color/text_primary"
             android:textSize="28sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtPollStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="18dp"
+            android:gravity="center"
+            android:text="@string/status_loading"
+            android:textColor="@color/text_secondary"
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnA"
@@ -110,6 +120,7 @@
             android:inputType="textCapSentences|textMultiLine"
             android:maxLength="240"
             android:minHeight="120dp"
+            android:enabled="false"
             android:padding="16dp"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_secondary"

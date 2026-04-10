@@ -55,6 +55,56 @@ public final class DatabaseHelper {
         return counts;
     }
 
+    public static QuestionSchedule findQuestionSchedule(int questionNo) {
+        String sql = "SELECT questionNo, questionText, startTime, endTime FROM questions WHERE questionNo = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, questionNo);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return null;
+                }
+
+                return new QuestionSchedule(
+                        resultSet.getInt("questionNo"),
+                        resultSet.getString("questionText"),
+                        resultSet.getTimestamp("startTime").toLocalDateTime(),
+                        resultSet.getTimestamp("endTime").toLocalDateTime());
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to load question schedule.", e);
+        }
+    }
+
+    public static boolean startPoll(int questionNo, LocalDateTime startTime, LocalDateTime endTime) {
+        String sql = "UPDATE questions SET startTime = ?, endTime = ? WHERE questionNo = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, Timestamp.valueOf(startTime));
+            statement.setTimestamp(2, Timestamp.valueOf(endTime));
+            statement.setInt(3, questionNo);
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to start poll.", e);
+        }
+    }
+
+    public static boolean endPoll(int questionNo, LocalDateTime endTime) {
+        String sql = "UPDATE questions SET endTime = ? WHERE questionNo = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, Timestamp.valueOf(endTime));
+            statement.setInt(2, questionNo);
+            return statement.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Failed to end poll.", e);
+        }
+    }
+
     public static void insertComment(int questionNo, String commentText) throws SQLException {
         String sql = "INSERT INTO comments (questionNo, commentText) VALUES (?, ?)";
 

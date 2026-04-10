@@ -6,6 +6,9 @@ def voteApiUrl = project.findProperty("SERVER_BASE_URL") ?: "http://10.0.2.2:808
 def commentApiUrl = voteApiUrl.endsWith("/select")
         ? voteApiUrl.substring(0, voteApiUrl.length() - "/select".length()) + "/comment"
         : voteApiUrl + "/comment"
+def statusApiUrl = voteApiUrl.endsWith("/select")
+        ? voteApiUrl.substring(0, voteApiUrl.length() - "/select".length()) + "/status"
+        : voteApiUrl + "/status"
 
 android {
     namespace 'com.example.clicker'
@@ -19,6 +22,7 @@ android {
         versionName "1.0"
         buildConfigField "String", "SERVER_BASE_URL", "\"${voteApiUrl}\""
         buildConfigField "String", "SERVER_COMMENT_URL", "\"${commentApiUrl}\""
+        buildConfigField "String", "SERVER_STATUS_URL", "\"${statusApiUrl}\""
     }
 
     buildTypes {

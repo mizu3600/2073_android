@@ -1,5 +1,13 @@
 USE clicker_system;
 
+SELECT questionNo, questionText, startTime, endTime
+FROM questions;
+
+UPDATE questions
+SET startTime = '2026-04-10 09:00:00',
+    endTime = '2026-04-10 10:30:00'
+WHERE questionNo = 1;
+
 INSERT INTO responses (questionNo, choice) VALUES (1, 'a');
 INSERT INTO responses (questionNo, choice) VALUES (1, 'b');
 INSERT INTO responses (questionNo, choice) VALUES (1, 'b');

@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Set;
 
@@ -23,11 +24,24 @@ public class SelectServlet extends HttpServlet {
 
         String choice = normaliseChoice(request.getParameter("choice"));
         int questionNo = parseQuestionNo(request.getParameter("questionNo"));
+        QuestionSchedule schedule = DatabaseHelper.findQuestionSchedule(questionNo);
 
         try (PrintWriter out = response.getWriter()) {
             if (choice == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 out.println("Invalid choice. Use a, b, c, or d.");
+                return;
+            }
+
+            if (schedule == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                out.printf("Question %d not found.%n", questionNo);
+                return;
+            }
+
+            if (!schedule.isOpen(LocalDateTime.now())) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                out.println(buildClosedMessage(schedule));
                 return;
             }
 
@@ -50,6 +64,19 @@ public class SelectServlet extends HttpServlet {
 
         String normalised = choice.trim().toLowerCase(Locale.ENGLISH);
         return VALID_CHOICES.contains(normalised) ? normalised : null;
+    }
+
+    private String buildClosedMessage(QuestionSchedule schedule) {
+        PollStatus status = schedule.getStatus(LocalDateTime.now());
+        return switch (status) {
+            case NOT_STARTED -> String.format(Locale.ENGLISH,
+                    "Voting has not started. It opens at %s.",
+                    DisplayServlet.FORMATTER.format(schedule.getStartTime()));
+            case CLOSED -> String.format(Locale.ENGLISH,
+                    "Voting has ended. It closed at %s.",
+                    DisplayServlet.FORMATTER.format(schedule.getEndTime()));
+            case OPEN -> "Voting is open.";
+        };
     }
 
     private int parseQuestionNo(String questionNoParam) {

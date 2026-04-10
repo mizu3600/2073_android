@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">IM2073 Clicker</string>
     <string name="question_text">Q1. Who is the coolest Marvel Hero?</string>
+    <string name="question_template">Q%1$d. %2$s</string>
     <string name="choice_a">A</string>
     <string name="choice_b">B</string>
     <string name="choice_c">C</string>
@@ -12,4 +13,5 @@
     <string name="comment_too_long">Comment is too long. Maximum %1$d characters.</string>
     <string name="sending_vote">Submitting vote...</string>
     <string name="sending_comment">Submitting comment...</string>
+    <string name="status_loading">Checking poll status…</string>
 </resources>
