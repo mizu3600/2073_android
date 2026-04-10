@@ -105,8 +105,6 @@ public class DisplayServlet extends HttpServlet {
         LocalDateTime now = LocalDateTime.now();
         PollStatus pollStatus = schedule == null ? PollStatus.CLOSED : schedule.getStatus(now);
         String questionText = schedule == null ? FALLBACK_QUESTION_TEXT : schedule.getQuestionText();
-        String summaryStatus = buildSummaryStatus(pollStatus);
-        String summaryWindow = buildWindowSummary(schedule);
         String summaryTiming = buildTimingSummary(schedule, pollStatus, now);
         long remainingSeconds = schedule == null || pollStatus != PollStatus.OPEN
                 ? 0
@@ -116,9 +114,10 @@ public class DisplayServlet extends HttpServlet {
                 .filter(entry -> entry.getValue() > 0)
                 .map(entry -> entry.getKey().toUpperCase(Locale.ENGLISH))
                 .orElse("None");
-        String leadingText = "None".equals(leadingChoice)
-                ? "Waiting for the first vote"
-                : "Choice " + leadingChoice + " is leading";
+        String compactStatus = buildCompactStatusLine(pollStatus, summaryTiming);
+        String leadingSummary = "None".equals(leadingChoice)
+                ? "No votes yet"
+                : "Choice " + leadingChoice;
 
         html.append("<!DOCTYPE html>\n");
         html.append("<html lang=\"en\">\n");
@@ -133,17 +132,16 @@ public class DisplayServlet extends HttpServlet {
         html.append(".shell{max-width:960px;margin:0 auto;padding:32px 20px 48px;}\n");
         html.append(".hero,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;}\n");
         html.append(".hero{padding:24px;}\n");
-        html.append(".eyebrow{margin:0 0 8px;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}\n");
-        html.append(".hero h1{margin:0 0 10px;font-size:clamp(28px,4vw,36px);line-height:1.1;max-width:680px;font-weight:700;}\n");
-        html.append(".hero p{margin:0;color:var(--muted);font-size:15px;max-width:620px;}\n");
-        html.append(".hero-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}\n");
-        html.append(".pill{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-size:13px;color:var(--muted);background:#fff;}\n");
-        html.append(".stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:20px;}\n");
-        html.append(".stat-card,.chart-card,.table-card,.comment-item{background:#fff;border:1px solid var(--line);border-radius:14px;}\n");
-        html.append(".stat-card{padding:16px;}\n");
-        html.append(".stat-label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.08em;}\n");
-        html.append(".stat-value{display:block;font-size:28px;font-weight:700;}\n");
-        html.append(".stat-note{display:block;margin-top:8px;font-size:14px;color:var(--muted);}\n");
+        html.append(".hero h1{margin:0;font-size:clamp(28px,4vw,36px);line-height:1.1;max-width:760px;font-weight:700;}\n");
+        html.append(".hero-status{margin-top:10px;font-size:15px;color:var(--muted);}\n");
+        html.append(".hero-stream{display:grid;gap:16px;margin-top:20px;}\n");
+        html.append(".hero-section{padding-top:16px;border-top:1px solid var(--line);}\n");
+        html.append(".metric-row{display:flex;gap:12px 16px;flex-wrap:wrap;align-items:center;}\n");
+        html.append(".metric{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--ink);}\n");
+        html.append(".metric-icon{font-size:16px;line-height:1;}\n");
+        html.append(".metric-label{font-weight:700;}\n");
+        html.append(".metric-value{color:var(--muted);}\n");
+        html.append(".chart-card,.table-card,.comment-item{background:#fff;border:1px solid var(--line);border-radius:14px;}\n");
         html.append(".panel{margin-top:16px;padding:24px;}\n");
         html.append(".panel-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px;}\n");
         html.append(".panel-head h2{margin:0;font-size:24px;}\n");
@@ -193,7 +191,6 @@ public class DisplayServlet extends HttpServlet {
         html.append(".comment-time{display:block;margin-bottom:8px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);}\n");
         html.append(".comment-text{margin:0;font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word;}\n");
         html.append(".empty-state{border:1px dashed var(--line);border-radius:14px;padding:18px;color:var(--muted);background:#ffffff;}\n");
-        html.append(".control-card{display:grid;gap:14px;}\n");
         html.append(".control-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}\n");
         html.append(".control-form{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}\n");
         html.append(".control-select{border:1px solid var(--line);border-radius:999px;padding:10px 14px;background:#fff;font-size:14px;color:var(--ink);}\n");
@@ -201,36 +198,35 @@ public class DisplayServlet extends HttpServlet {
         html.append(".control-btn.primary{background:var(--accent);color:#fff;}\n");
         html.append(".control-btn.secondary{background:#efefec;color:var(--ink);}\n");
         html.append(".control-btn:disabled{opacity:0.45;cursor:not-allowed;}\n");
-        html.append(".notice{margin-bottom:16px;padding:14px 16px;background:#f4f7f1;color:#335c2b;border:1px solid #cfe0c6;border-radius:12px;}\n");
+        html.append(".notice{padding:14px 16px;background:#f4f7f1;color:#335c2b;border:1px solid #cfe0c6;border-radius:12px;}\n");
         html.append(".error{margin-top:16px;padding:14px 16px;background:#faf4f4;color:#8a2d2d;border:1px solid #e5caca;border-radius:12px;}\n");
         html.append("@media (max-width:860px){.summary-grid,.pie-layout{grid-template-columns:1fr;}.panel{padding:18px;}.hero{padding:20px;}.column-chart{min-height:300px;gap:12px;}.column-track{height:220px;}}\n");
-        html.append("@media (max-width:560px){.shell{padding:22px 14px 36px;}.bar-item{grid-template-columns:48px minmax(0,1fr);}.bar-count{grid-column:1 / -1;text-align:left;}.toggle-btn,.control-btn,.control-select{flex:1 1 100%;}.pill{width:100%;justify-content:center;}}\n");
+        html.append("@media (max-width:560px){.shell{padding:22px 14px 36px;}.bar-item{grid-template-columns:48px minmax(0,1fr);}.bar-count{grid-column:1 / -1;text-align:left;}.toggle-btn,.control-btn,.control-select{flex:1 1 100%;}.control-form{width:100%;}.metric{width:100%;}}\n");
         html.append("</style>\n");
         html.append("</head>\n");
         html.append("<body>\n");
         html.append("<div class=\"shell\">\n");
         html.append("<section class=\"hero\">\n");
         html.append(String.format(Locale.ENGLISH, "<h1>Q%d. %s</h1>%n", questionNo, escapeHtml(questionText)));
-        html.append("<div class=\"hero-meta\">\n");
-        html.append(String.format(Locale.ENGLISH, "<span class=\"pill\">%s</span>%n", escapeHtml(summaryStatus)));
-        html.append(String.format(Locale.ENGLISH, "<span class=\"pill\">%s</span>%n", escapeHtml(summaryWindow)));
-        html.append(String.format(Locale.ENGLISH, "<span class=\"pill\">%s</span>%n", escapeHtml(summaryTiming)));
+        html.append(String.format(Locale.ENGLISH, "<div class=\"hero-status\">%s</div>%n", escapeHtml(compactStatus)));
+        html.append("<div class=\"hero-stream\">\n");
+        html.append("<div class=\"hero-section\">\n");
+        html.append("<div class=\"metric-row\">\n");
+        appendCompactMetric(html, "&#x1F5F3;", "Votes", String.valueOf(totalVotes));
+        appendCompactMetric(html, "&#x1F3C6;", "Leading", escapeHtml(leadingSummary));
+        appendCompactMetric(html, "&#x1F4AC;", "Comments", String.valueOf(comments.size()));
+        appendCompactMetric(html, "&#x23F1;", "Time", formatRemainingTime(remainingSeconds));
         html.append("</div>\n");
-        html.append("<div class=\"stats\">\n");
-        appendStatCard(html, "Total Votes", String.valueOf(totalVotes), "");
-        appendStatCard(html, "Leading Choice", escapeHtml(leadingChoice), "");
-        appendStatCard(html, "Comments", String.valueOf(comments.size()), "");
-        appendStatCard(html, "Time Remaining", formatRemainingTime(remainingSeconds), "");
         html.append("</div>\n");
-        html.append("</section>\n");
-        html.append("<section class=\"panel\">\n");
         if (notice != null && !notice.isBlank()) {
-            html.append(String.format(Locale.ENGLISH, "<div class=\"notice\">%s</div>%n", escapeHtml(notice)));
+            html.append(String.format(Locale.ENGLISH,
+                    "<div class=\"hero-section\"><div class=\"notice\">%s</div></div>%n",
+                    escapeHtml(notice)));
         }
-        html.append("<div class=\"panel-head\">\n");
-        html.append("<div><h2>Poll Controls</h2></div>\n");
-        html.append("</div>\n");
+        html.append("<div class=\"hero-section\">\n");
         appendControls(html, questionNo, pollStatus);
+        html.append("</div>\n");
+        html.append("</div>\n");
         html.append("</section>\n");
         html.append("<section class=\"panel\">\n");
         html.append("<div class=\"panel-head\">\n");
@@ -301,14 +297,12 @@ public class DisplayServlet extends HttpServlet {
         return html.toString();
     }
 
-    private void appendStatCard(StringBuilder html, String label, String value, String note) {
-        html.append("<div class=\"stat-card\">");
-        html.append(String.format(Locale.ENGLISH, "<span class=\"stat-label\">%s</span>", label));
-        html.append(String.format(Locale.ENGLISH, "<span class=\"stat-value\">%s</span>", value));
-        if (note != null && !note.isBlank()) {
-            html.append(String.format(Locale.ENGLISH, "<span class=\"stat-note\">%s</span>", note));
-        }
-        html.append("</div>\n");
+    private void appendCompactMetric(StringBuilder html, String icon, String label, String value) {
+        html.append("<span class=\"metric\">");
+        html.append(String.format(Locale.ENGLISH, "<span class=\"metric-icon\">%s</span>", icon));
+        html.append(String.format(Locale.ENGLISH, "<span class=\"metric-label\">%s</span>", label));
+        html.append(String.format(Locale.ENGLISH, "<span class=\"metric-value\">%s</span>", value));
+        html.append("</span>\n");
     }
 
     private void appendBarChart(StringBuilder html, Map<String, Integer> counts, int totalVotes) {
@@ -412,33 +406,27 @@ public class DisplayServlet extends HttpServlet {
     }
 
     private void appendControls(StringBuilder html, int questionNo, PollStatus pollStatus) {
-        boolean canStart = pollStatus != PollStatus.OPEN;
-        boolean canEnd = pollStatus == PollStatus.OPEN;
-
-        html.append("<div class=\"control-card\">\n");
         html.append("<div class=\"control-row\">\n");
-        html.append("<form class=\"control-form\" method=\"post\" action=\"control\">\n");
-        html.append(String.format(Locale.ENGLISH, "<input type=\"hidden\" name=\"questionNo\" value=\"%d\">%n", questionNo));
-        html.append("<input type=\"hidden\" name=\"action\" value=\"start\">\n");
-        html.append("<select class=\"control-select\" name=\"durationSeconds\">");
-        html.append("<option value=\"30\">30 seconds</option>");
-        html.append("<option value=\"60\">1 minute</option>");
-        html.append("<option value=\"180\" selected>3 minutes</option>");
-        html.append("<option value=\"300\">5 minutes</option>");
-        html.append("<option value=\"600\">10 minutes</option>");
-        html.append("</select>\n");
-        html.append(String.format(Locale.ENGLISH,
-                "<button class=\"control-btn primary\" type=\"submit\" %s>Start Poll</button>%n",
-                canStart ? "" : "disabled"));
-        html.append("</form>\n");
-        html.append("<form class=\"control-form\" method=\"post\" action=\"control\">\n");
-        html.append(String.format(Locale.ENGLISH, "<input type=\"hidden\" name=\"questionNo\" value=\"%d\">%n", questionNo));
-        html.append("<input type=\"hidden\" name=\"action\" value=\"end\">\n");
-        html.append(String.format(Locale.ENGLISH,
-                "<button class=\"control-btn secondary\" type=\"submit\" %s>End Now</button>%n",
-                canEnd ? "" : "disabled"));
-        html.append("</form>\n");
-        html.append("</div>\n");
+        if (pollStatus == PollStatus.OPEN) {
+            html.append("<form class=\"control-form\" method=\"post\" action=\"control\">\n");
+            html.append(String.format(Locale.ENGLISH, "<input type=\"hidden\" name=\"questionNo\" value=\"%d\">%n", questionNo));
+            html.append("<input type=\"hidden\" name=\"action\" value=\"end\">\n");
+            html.append("<button class=\"control-btn secondary\" type=\"submit\">End Poll</button>\n");
+            html.append("</form>\n");
+        } else {
+            html.append("<form class=\"control-form\" method=\"post\" action=\"control\">\n");
+            html.append(String.format(Locale.ENGLISH, "<input type=\"hidden\" name=\"questionNo\" value=\"%d\">%n", questionNo));
+            html.append("<input type=\"hidden\" name=\"action\" value=\"start\">\n");
+            html.append("<select class=\"control-select\" name=\"durationSeconds\">");
+            html.append("<option value=\"30\">30 seconds</option>");
+            html.append("<option value=\"60\">1 minute</option>");
+            html.append("<option value=\"180\" selected>3 minutes</option>");
+            html.append("<option value=\"300\">5 minutes</option>");
+            html.append("<option value=\"600\">10 minutes</option>");
+            html.append("</select>\n");
+            html.append("<button class=\"control-btn primary\" type=\"submit\">Start Poll</button>\n");
+            html.append("</form>\n");
+        }
         html.append("</div>\n");
     }
 
@@ -477,18 +465,6 @@ public class DisplayServlet extends HttpServlet {
         return gradient.toString();
     }
 
-    private String buildStatusMessage(QuestionSchedule schedule, PollStatus status) {
-        if (schedule == null) {
-            return "Question schedule is not configured.";
-        }
-
-        return switch (status) {
-            case OPEN -> "Voting and comments are open within the configured time window.";
-            case NOT_STARTED -> "Voting has not started yet.";
-            case CLOSED -> "Voting and comments are closed for this question.";
-        };
-    }
-
     private String formatStatusLabel(PollStatus status) {
         return switch (status) {
             case OPEN -> "Open";
@@ -497,21 +473,8 @@ public class DisplayServlet extends HttpServlet {
         };
     }
 
-    private String buildSummaryStatus(PollStatus status) {
-        return switch (status) {
-            case OPEN -> "Poll open";
-            case NOT_STARTED -> "Poll not started";
-            case CLOSED -> "Poll closed";
-        };
-    }
-
-    private String buildWindowSummary(QuestionSchedule schedule) {
-        if (schedule == null) {
-            return "Schedule unavailable";
-        }
-
-        long seconds = Math.max(0, java.time.Duration.between(schedule.getStartTime(), schedule.getEndTime()).getSeconds());
-        return "Opened for " + humanizeDuration(seconds);
+    private String buildCompactStatusLine(PollStatus status, String timingSummary) {
+        return formatStatusLabel(status) + " · " + timingSummary;
     }
 
     private String buildTimingSummary(QuestionSchedule schedule, PollStatus status, LocalDateTime now) {
