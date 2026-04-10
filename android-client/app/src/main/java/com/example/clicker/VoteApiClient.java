@@ -1,4 +1,4 @@
-package com.example.clicker.network;
+package com.example.clicker;
 
 import java.io.BufferedReader;
 import java.io.IOException;

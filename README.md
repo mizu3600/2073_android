@@ -16,13 +16,10 @@
 
 ## 当前结构
 
-- `android-client/app/src/main/java/com/example/clicker/ui/`：Activity 与界面交互
-- `android-client/app/src/main/java/com/example/clicker/network/`：客户端 HTTP 请求
-- `android-client/app/src/main/java/com/example/clicker/config/`：客户端运行配置
-- `server/src/main/java/com/example/clicker/server/web/`：Servlet 与页面渲染
-- `server/src/main/java/com/example/clicker/server/service/`：投票业务逻辑
-- `server/src/main/java/com/example/clicker/server/repository/`：JDBC 数据访问
-- `server/src/main/java/com/example/clicker/server/config/`：数据库连接与应用清理逻辑
+- `android-client/app/src/main/java/com/example/clicker/`：Android Activity 与 HTTP 请求
+- `server/src/main/java/com/example/clicker/server/`：Servlet、数据库访问与应用清理逻辑
+- `database/`：数据库初始化与查询脚本
+- `scripts/`：本地构建与部署脚本
 
 ## 本机环境
 

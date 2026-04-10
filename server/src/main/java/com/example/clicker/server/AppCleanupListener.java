@@ -1,4 +1,4 @@
-package com.example.clicker.server.config;
+package com.example.clicker.server;
 
 import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
 import jakarta.servlet.ServletContextEvent;

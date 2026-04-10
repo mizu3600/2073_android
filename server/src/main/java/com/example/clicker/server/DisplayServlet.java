@@ -1,18 +1,69 @@
-package com.example.clicker.server.web;
+package com.example.clicker.server;
 
-import com.example.clicker.server.service.VoteSummary;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class ResultsPageRenderer {
+@WebServlet("/display")
+public class DisplayServlet extends HttpServlet {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final List<String> CHOICE_ORDER = List.of("a", "b", "c", "d");
+    private static final String QUESTION_TEXT = "Who is the coolest Marvel Hero?";
 
-    public String render(VoteSummary summary, String errorMessage) {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        int questionNo = parseQuestionNo(request.getParameter("questionNo"));
+        Map<String, Integer> counts = defaultCounts();
+        String errorMessage = null;
+
+        try {
+            counts.putAll(DatabaseHelper.countResponsesByChoice(questionNo));
+        } catch (SQLException e) {
+            errorMessage = e.getMessage();
+        }
+
+        try (PrintWriter out = response.getWriter()) {
+            out.print(renderPage(questionNo, counts, errorMessage));
+        }
+    }
+
+    private int parseQuestionNo(String questionNoParam) {
+        if (questionNoParam == null || questionNoParam.isBlank()) {
+            return 1;
+        }
+
+        try {
+            return Integer.parseInt(questionNoParam);
+        } catch (NumberFormatException ignored) {
+            return 1;
+        }
+    }
+
+    private Map<String, Integer> defaultCounts() {
+        LinkedHashMap<String, Integer> counts = new LinkedHashMap<>();
+        for (String choice : CHOICE_ORDER) {
+            counts.put(choice, 0);
+        }
+        return counts;
+    }
+
+    private String renderPage(int questionNo, Map<String, Integer> counts, String errorMessage) {
         StringBuilder html = new StringBuilder();
-        int totalVotes = summary.getTotalVotes();
+        int totalVotes = counts.values().stream().mapToInt(Integer::intValue).sum();
 
         html.append("<!DOCTYPE html>\n");
         html.append("<html lang=\"en\">\n");
@@ -34,14 +85,14 @@ public class ResultsPageRenderer {
         html.append("</head>\n");
         html.append("<body>\n");
         html.append("<div class=\"card\">\n");
-        html.append(String.format(Locale.ENGLISH, "<h2>Q%d. Who is the coolest Marvel Hero?</h2>%n", summary.getQuestionNo()));
+        html.append(String.format(Locale.ENGLISH, "<h2>Q%d. %s</h2>%n", questionNo, QUESTION_TEXT));
         html.append(String.format(Locale.ENGLISH, "<p class=\"meta\">Last refreshed: %s</p>%n", FORMATTER.format(LocalDateTime.now())));
         html.append(String.format(Locale.ENGLISH, "<p class=\"meta\">Total votes: %d</p>%n", totalVotes));
         html.append("<table>\n");
         html.append("<thead><tr><th>Choice</th><th>Votes</th><th>Visual</th></tr></thead>\n");
         html.append("<tbody>\n");
 
-        for (Map.Entry<String, Integer> entry : summary.getCounts().entrySet()) {
+        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
             int percent = totalVotes == 0 ? 0 : (entry.getValue() * 100 / totalVotes);
             html.append("<tr>\n");
             html.append(String.format(Locale.ENGLISH, "<td>%s</td>%n", entry.getKey().toUpperCase(Locale.ENGLISH)));
@@ -56,7 +107,7 @@ public class ResultsPageRenderer {
         html.append("</table>\n");
         html.append(String.format(Locale.ENGLISH,
                 "<p class=\"meta\" style=\"margin-top:16px;\"><a href=\"display?questionNo=%d\">Refresh</a></p>%n",
-                summary.getQuestionNo()));
+                questionNo));
 
         if (errorMessage != null) {
             html.append(String.format(Locale.ENGLISH,

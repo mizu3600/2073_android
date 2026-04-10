@@ -1,13 +1,9 @@
-package com.example.clicker.ui;
+package com.example.clicker;
 
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.clicker.R;
-import com.example.clicker.config.AppConfig;
-import com.example.clicker.network.VoteApiClient;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         txtResponse = findViewById(R.id.txtResponseId);
-        voteApiClient = new VoteApiClient(AppConfig.getServerBaseUrl());
+        voteApiClient = new VoteApiClient(BuildConfig.SERVER_BASE_URL);
     }
 
     public void btnAHandler(android.view.View view) {

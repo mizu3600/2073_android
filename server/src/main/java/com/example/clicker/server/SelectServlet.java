@@ -1,6 +1,5 @@
-package com.example.clicker.server.web;
+package com.example.clicker.server;
 
-import com.example.clicker.server.service.VoteService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,7 +15,6 @@ import java.util.Set;
 @WebServlet("/select")
 public class SelectServlet extends HttpServlet {
     private static final Set<String> VALID_CHOICES = Set.of("a", "b", "c", "d");
-    private final VoteService voteService = new VoteService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,7 +32,7 @@ public class SelectServlet extends HttpServlet {
             }
 
             try {
-                voteService.submitVote(questionNo, choice);
+                DatabaseHelper.insertResponse(questionNo, choice);
                 out.printf("Vote submitted for question %d, choice %s.%n",
                         questionNo,
                         choice.toUpperCase(Locale.ENGLISH));
