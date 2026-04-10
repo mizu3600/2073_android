@@ -1,7 +1,7 @@
 package com.example.clicker;
 
 import android.os.Bundle;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -12,7 +12,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int QUESTION_NO = 1;
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private TextView txtResponse;
     private VoteApiClient voteApiClient;
 
     @Override
@@ -20,7 +19,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        txtResponse = findViewById(R.id.txtResponseId);
         voteApiClient = new VoteApiClient(BuildConfig.SERVER_BASE_URL);
     }
 
@@ -41,10 +39,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleChoice(String choice) {
-        txtResponse.setText(getString(R.string.sending_vote));
+        Toast.makeText(this, R.string.sending_vote, Toast.LENGTH_SHORT).show();
         executorService.execute(() -> {
             String result = voteApiClient.submitChoice(QUESTION_NO, choice);
-            runOnUiThread(() -> txtResponse.setText(result));
+            runOnUiThread(() -> Toast.makeText(this, result, Toast.LENGTH_SHORT).show());
         });
     }
 

@@ -1,4 +1,18 @@
 <resources>
-    <color name="seed">#0B5CAD</color>
-    <color name="surface">#FAFBFC</color>
+    <color name="seed">#111111</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="screen_background">#F5F5F3</color>
+    <color name="hero_start">#FFFFFF</color>
+    <color name="hero_end">#FFFFFF</color>
+    <color name="question_chip">#F0F0EE</color>
+    <color name="choice_a">#FFFFFF</color>
+    <color name="choice_b">#FFFFFF</color>
+    <color name="choice_c">#FFFFFF</color>
+    <color name="choice_d">#FFFFFF</color>
+    <color name="stroke_soft">#DDDDDD</color>
+    <color name="response_surface">#FFFFFF</color>
+    <color name="response_stroke">#DDDDDD</color>
+    <color name="text_primary">#111111</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_on_primary_soft">#666666</color>
 </resources>

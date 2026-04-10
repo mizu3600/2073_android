@@ -5,7 +5,5 @@
     <string name="choice_b">B</string>
     <string name="choice_c">C</string>
     <string name="choice_d">D</string>
-    <string name="response_idle">Tap a choice to submit your vote.</string>
     <string name="sending_vote">Submitting vote...</string>
-    <string name="connection_hint">Default debug endpoint comes from Gradle. Set SERVER_BASE_URL in gradle.properties when testing on a real phone.</string>
 </resources>
